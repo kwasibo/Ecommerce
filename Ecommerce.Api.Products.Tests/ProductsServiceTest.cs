@@ -12,14 +12,20 @@ namespace Ecommerce.Api.Products.Tests
 {
     public class ProductsServiceTest
     {
-        [Fact]
-        public async Task GetProductsReturnsAllProducts()
+        public ProductsDbContext dbContext;
+
+        public ProductsServiceTest()
         {
             var options = new DbContextOptionsBuilder<ProductsDbContext>()
-                .UseInMemoryDatabase(nameof(GetProductsReturnsAllProducts))
-                .Options;
-            var dbContext = new ProductsDbContext(options);
+               .UseInMemoryDatabase(nameof(GetProductsReturnsAllProducts))
+               .Options;
+            dbContext = new ProductsDbContext(options);
             CreateProducts(dbContext);
+        }
+
+        [Fact]
+        public async Task GetProductsReturnsAllProducts()
+        {           
 
             var productProfile = new ProductProfile();
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(productProfile));
@@ -35,12 +41,7 @@ namespace Ecommerce.Api.Products.Tests
         [Fact]
         public async Task GetProductReturnsProductUsingValidId()
         {
-            var options = new DbContextOptionsBuilder<ProductsDbContext>()
-                .UseInMemoryDatabase(nameof(GetProductReturnsProductUsingValidId))
-                .Options;
-            var dbContext = new ProductsDbContext(options);
-            CreateProducts(dbContext);
-
+           
             var productProfile = new ProductProfile();
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(productProfile));
             var mapper = new Mapper(configuration);
@@ -56,12 +57,7 @@ namespace Ecommerce.Api.Products.Tests
         [Fact]
         public async Task GetProductReturnsProductUsingInValidId()
         {
-            var options = new DbContextOptionsBuilder<ProductsDbContext>()
-                .UseInMemoryDatabase(nameof(GetProductReturnsProductUsingValidId))
-                .Options;
-            var dbContext = new ProductsDbContext(options);
-            CreateProducts(dbContext);
-
+           
             var productProfile = new ProductProfile();
             var configuration = new MapperConfiguration(cfg => cfg.AddProfile(productProfile));
             var mapper = new Mapper(configuration);
@@ -75,17 +71,22 @@ namespace Ecommerce.Api.Products.Tests
 
         private void CreateProducts(ProductsDbContext dbContext)
         {
-            for(int i=1; i <= 10; i++)
-            {
-                dbContext.Products.Add(new Product()
+            var product = dbContext.Products.FirstOrDefault();
+
+        if (product == null)
+           {
+                for (int i = 1; i <= 10; i++)
                 {
-                    Id = i,
-                    Name = Guid.NewGuid().ToString(),
-                    Inventory = i + 10,
-                    Price = (decimal)(i * 3.14)
-                });
+                    dbContext.Products.Add(new Product()
+                    {
+                        Id = i,
+                        Name = Guid.NewGuid().ToString(),
+                        Inventory = i + 10,
+                        Price = (decimal)(i * 3.14)
+                    });
+                }
+                dbContext.SaveChanges();
             }
-            dbContext.SaveChanges();
         }
     }
 }
